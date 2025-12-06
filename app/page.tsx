@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Plus, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TopNavigation } from "@/components/top-navigation"
@@ -16,6 +16,8 @@ import { QuickSetupModal } from "@/components/quick-setup-modal"
 import { SubjectsContainer } from "@/components/subjects-container"
 import { AllSubjectsContainer } from "@/components/all-subjects-container"
 import { RenameTemplateModal } from "@/components/rename-template-modal"
+import { QuickAttendanceModal } from "@/components/quick-attendance-modal"
+import { loadDataFromSupabase, supabase } from "@/lib/supabase/backup"
 
 export interface Subject {
   id: string
@@ -64,6 +66,38 @@ export default function HomePage() {
   const [quickSetupTemplate, setQuickSetupTemplate] = useState<{ title: string; category: Subject["category"] } | null>(
     null,
   )
+  const [showQuickAttendance, setShowQuickAttendance] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const loadBackupData = async () => {
+      try {
+        const autoBackupEnabled = localStorage.getItem("autoBackup") === "true"
+        if (autoBackupEnabled) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
+
+          if (user) {
+            const backupData = await loadDataFromSupabase(user.id)
+            if (backupData) {
+              localStorage.setItem("subjects", JSON.stringify(backupData.subjects))
+              localStorage.setItem("templates", JSON.stringify(backupData.templates))
+              localStorage.setItem("attendance", JSON.stringify(backupData.attendance))
+
+              setSubjects(backupData.subjects)
+              setTemplates(backupData.templates)
+              setAttendanceRecords(backupData.attendance)
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load backup:", error)
+      }
+    }
+
+    loadBackupData()
+  }, [])
 
   const handleCreateTemplate = (name: string, category: Subject["category"]) => {
     const newTemplate: Template = {
@@ -82,7 +116,6 @@ export default function HomePage() {
     let template = selectedTemplate
 
     if (!template) {
-      // Create a new template if none is selected
       const newTemplate: Template = {
         id: Date.now().toString(),
         name: category === "custom" ? "Untitled" : category.charAt(0).toUpperCase() + category.slice(1),
@@ -109,7 +142,6 @@ export default function HomePage() {
   }
 
   const handleBulkAddSubjects = (subjectNames: string[], category: Subject["category"]) => {
-    // Create template
     const newTemplate: Template = {
       id: Date.now().toString(),
       name: category === "custom" ? "Untitled" : category.charAt(0).toUpperCase() + category.slice(1),
@@ -119,7 +151,6 @@ export default function HomePage() {
     setTemplates((prev) => [...prev, newTemplate])
     setSelectedTemplate(newTemplate)
 
-    // Create subjects
     const newSubjects = subjectNames.map((name) => ({
       id: `${Date.now()}-${Math.random()}`,
       name,
@@ -191,7 +222,6 @@ export default function HomePage() {
     setSelectionMode(false)
     setSelectedSubjects([])
 
-    // Clean up empty templates
     const remainingSubjects = subjects.filter((s) => !selectedSubjects.includes(s.id))
     const usedTemplateIds = new Set(remainingSubjects.map((s) => s.templateId))
     setTemplates((prev) => prev.filter((t) => usedTemplateIds.has(t.id)))
@@ -222,7 +252,6 @@ export default function HomePage() {
 
   const navigateBack = () => {
     if (viewMode === "attendance") {
-      // If we came from a recent subject (no selected template), go to all subjects
       if (!selectedTemplate) {
         setViewMode("all-subjects")
       } else {
@@ -241,6 +270,19 @@ export default function HomePage() {
     setSelectedSubject(null)
   }
 
+  const handleQuickAttendance = () => {
+    setShowQuickAttendance(true)
+  }
+
+  const handleSearchAttendance = () => {
+    setViewMode("home")
+    setSelectedTemplate(null)
+    setSelectedSubject(null)
+    setTimeout(() => {
+      searchInputRef.current?.focus()
+    }, 100)
+  }
+
   const renderContent = () => {
     switch (viewMode) {
       case "home":
@@ -253,6 +295,7 @@ export default function HomePage() {
             onSubjectSelect={handleSubjectSelect}
             onAddTemplate={() => setShowAddTemplateModal(true)}
             onViewAllSubjects={handleViewAllSubjects}
+            searchInputRef={searchInputRef}
           />
         )
 
@@ -334,7 +377,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -345,6 +388,8 @@ export default function HomePage() {
         onSubjectSelect={handleSubjectSelect}
         onTemplateSelect={handleTemplateSelectFromSidebar}
         onNavigateHome={navigateToHome}
+        onQuickAttendance={handleQuickAttendance}
+        onSearchAttendance={handleSearchAttendance}
       />
 
       <div className="flex flex-col min-h-screen">
@@ -395,6 +440,13 @@ export default function HomePage() {
         onClose={() => setShowRenameModal(false)}
         template={selectedTemplate}
         onRename={handleRenameTemplate}
+      />
+
+      <QuickAttendanceModal
+        isOpen={showQuickAttendance}
+        onClose={() => setShowQuickAttendance(false)}
+        subjects={subjects}
+        attendanceRecords={attendanceRecords}
       />
     </div>
   )

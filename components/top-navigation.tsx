@@ -1,7 +1,11 @@
 "use client"
 
-import { Menu, User, Settings } from "lucide-react"
+import { Menu, X } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ProfileDropdown } from "@/components/profile-dropdown"
+import { ProfileModal } from "@/components/profile-modal"
+import { SettingsModal } from "@/components/settings-modal"
 
 interface TopNavigationProps {
   onMenuClick: () => void
@@ -16,35 +20,39 @@ export function TopNavigation({
   selectedCount = 0,
   onExitSelection,
 }: TopNavigationProps) {
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-30">
-      <div className="flex items-center justify-between max-w-6xl mx-auto">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={selectionMode ? onExitSelection : onMenuClick}
-          className="text-gray-600 hover:bg-gray-100"
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-
-        <div className="text-center">
-          {selectionMode ? (
-            <span className="text-lg font-semibold text-gray-800">{selectedCount} Selected</span>
-          ) : (
-            <h1 className="text-lg font-semibold text-blue-600">Self Attendance</h1>
-          )}
-        </div>
-
-        <div className="flex items-center space-x-1">
-          <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100">
-            <Settings className="w-5 h-5" />
+    <>
+      <header className="bg-background border-b border-border px-4 py-3 sticky top-0 z-30">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={selectionMode ? onExitSelection : onMenuClick}
+            className="text-muted-foreground hover:bg-muted"
+          >
+            {selectionMode ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
-          <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100">
-            <User className="w-5 h-5" />
-          </Button>
+
+          <div className="text-center">
+            {selectionMode ? (
+              <span className="text-lg font-semibold text-foreground">{selectedCount} Selected</span>
+            ) : (
+              <h1 className="text-lg font-semibold text-blue-600 dark:text-blue-400">Self Tracker</h1>
+            )}
+          </div>
+
+          <ProfileDropdown
+            onProfileClick={() => setShowProfileModal(true)}
+            onSettingsClick={() => setShowSettingsModal(true)}
+          />
         </div>
-      </div>
-    </header>
+      </header>
+
+      <ProfileModal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} />
+      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+    </>
   )
 }

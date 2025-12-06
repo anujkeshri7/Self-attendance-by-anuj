@@ -83,45 +83,47 @@ export function AttendanceModal({ isOpen, onClose, date, subject, existingRecord
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md w-[95vw] max-w-[360px]">
         <DialogHeader>
-          <DialogTitle className="text-center">Attendance for {new Date(date).toLocaleDateString()}</DialogTitle>
+          <DialogTitle className="text-center text-base">
+            Attendance for {new Date(date).toLocaleDateString()}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div>
-            <Label className="text-sm font-medium mb-2 block">Attendance Status</Label>
-            <div className="grid grid-cols-1 gap-2">
-              {/* Main attendance options */}
+            <Label className="text-xs font-medium mb-1 block">Attendance Status</Label>
+            <div className="grid grid-cols-1 gap-1.5">
               {mainAttendanceOptions.map((option) => (
                 <Button
                   key={option.value}
                   variant={status === option.value ? "default" : "outline"}
-                  className={`justify-start ${status === option.value ? option.color + " text-white" : ""}`}
+                  size="sm"
+                  className={`justify-start h-9 ${status === option.value ? option.color + " text-white" : ""}`}
                   onClick={() => setStatus(option.value as AttendanceRecord["status"])}
                 >
                   {option.label}
                 </Button>
               ))}
 
-              {/* More options dropdown button */}
               <Button
                 variant="outline"
-                className={`justify-between ${isMoreOptionSelected ? "border-blue-500 bg-blue-50" : ""}`}
+                size="sm"
+                className={`justify-between h-9 ${isMoreOptionSelected ? "border-blue-500 bg-blue-50" : ""}`}
                 onClick={() => setShowMoreOptions(!showMoreOptions)}
               >
                 <span>More Options</span>
                 {showMoreOptions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>
 
-              {/* More attendance options */}
               {showMoreOptions && (
-                <div className="pl-4 space-y-2 border-l-2 border-blue-200">
+                <div className="pl-3 space-y-1.5 border-l-2 border-blue-200">
                   {moreAttendanceOptions.map((option) => (
                     <Button
                       key={option.value}
                       variant={status === option.value ? "default" : "outline"}
-                      className={`justify-start ${status === option.value ? option.color + " text-white" : ""}`}
+                      size="sm"
+                      className={`justify-start h-8 w-full ${status === option.value ? option.color + " text-white" : ""}`}
                       onClick={() => setStatus(option.value as AttendanceRecord["status"])}
                     >
                       {option.label}
@@ -134,7 +136,7 @@ export function AttendanceModal({ isOpen, onClose, date, subject, existingRecord
 
           {status === "overtime" && (
             <div>
-              <Label htmlFor="overtime-hours" className="text-sm font-medium">
+              <Label htmlFor="overtime-hours" className="text-xs font-medium">
                 Overtime Hours
               </Label>
               <Input
@@ -143,19 +145,21 @@ export function AttendanceModal({ isOpen, onClose, date, subject, existingRecord
                 placeholder="Enter hours"
                 value={overtimeHours}
                 onChange={(e) => setOvertimeHours(e.target.value)}
+                className="h-8"
               />
             </div>
           )}
 
           {status === "leave" && (
             <div>
-              <Label className="text-sm font-medium mb-2 block">Leave Type</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <Label className="text-xs font-medium mb-1 block">Leave Type</Label>
+              <div className="grid grid-cols-2 gap-1.5">
                 {leaveTypes.map((type) => (
                   <Button
                     key={type.value}
                     variant={leaveType === type.value ? "default" : "outline"}
                     size="sm"
+                    className="h-8 text-xs"
                     onClick={() => setLeaveType(type.value as AttendanceRecord["leaveType"])}
                   >
                     {type.label}
@@ -166,13 +170,14 @@ export function AttendanceModal({ isOpen, onClose, date, subject, existingRecord
           )}
 
           <div>
-            <Label className="text-sm font-medium mb-2 block text-gray-500">Shift Options (Optional)</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <Label className="text-xs font-medium mb-1 block text-gray-500">Shift Options (Optional)</Label>
+            <div className="grid grid-cols-2 gap-1.5">
               {shiftOptions.map((option) => (
                 <Button
                   key={option.value}
                   variant={shift === option.value ? "secondary" : "outline"}
                   size="sm"
+                  className="h-8 text-xs"
                   onClick={() =>
                     setShift(shift === option.value ? undefined : (option.value as AttendanceRecord["shift"]))
                   }
@@ -184,7 +189,7 @@ export function AttendanceModal({ isOpen, onClose, date, subject, existingRecord
                 variant="outline"
                 size="sm"
                 onClick={() => setShift(undefined)}
-                className="col-span-2 text-red-600"
+                className="col-span-2 text-red-600 h-8 text-xs"
               >
                 ❌ Clear Shift
               </Button>
@@ -192,34 +197,26 @@ export function AttendanceModal({ isOpen, onClose, date, subject, existingRecord
           </div>
 
           <div>
-            <Label htmlFor="custom-color" className="text-sm font-medium mb-2 block">
+            <Label htmlFor="custom-color" className="text-xs font-medium mb-1 block">
               🎨 Custom Color (Optional)
             </Label>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-2">
               <Input
                 id="custom-color"
                 type="color"
                 value={customColor}
                 onChange={(e) => setCustomColor(e.target.value)}
-                className="w-16 h-10 rounded-lg border-2"
+                className="w-12 h-8 p-1 rounded border"
               />
-              <span className="text-sm text-gray-600">Choose a custom color for this date</span>
+              <span className="text-xs text-gray-600">Choose a custom color for this date</span>
             </div>
-            {customColor && (
-              <div
-                className="mt-2 p-2 rounded-lg text-center text-white font-medium"
-                style={{ backgroundColor: customColor }}
-              >
-                Preview Color
-              </div>
-            )}
           </div>
 
-          <div className="flex space-x-3 pt-4">
-            <Button variant="destructive" className="flex-1" onClick={handleClose}>
+          <div className="flex gap-2 pt-2">
+            <Button variant="destructive" size="sm" className="flex-1 h-9" onClick={handleClose}>
               CANCEL
             </Button>
-            <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleSave}>
+            <Button size="sm" className="flex-1 h-9 bg-green-600 hover:bg-green-700" onClick={handleSave}>
               SAVE
             </Button>
           </div>
