@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createClient } from "@/lib/supabase/client"
+import { demoSignIn } from "@/lib/demo-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,16 +22,11 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
+      demoSignIn(email, password)
       router.push("/")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
@@ -55,7 +50,7 @@ export default function LoginPage() {
           <Card className="border-0 shadow-xl">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
-              <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
+              <CardDescription className="text-center">Enter any email and password (demo mode)</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin}>

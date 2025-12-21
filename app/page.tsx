@@ -17,7 +17,8 @@ import { SubjectsContainer } from "@/components/subjects-container"
 import { AllSubjectsContainer } from "@/components/all-subjects-container"
 import { RenameTemplateModal } from "@/components/rename-template-modal"
 import { QuickAttendanceModal } from "@/components/quick-attendance-modal"
-import { loadDataFromSupabase, supabase } from "@/lib/supabase/backup"
+import { getDemoUser } from "@/lib/demo-auth"
+import { useRouter } from "next/navigation"
 
 export interface Subject {
   id: string
@@ -68,36 +69,14 @@ export default function HomePage() {
   )
   const [showQuickAttendance, setShowQuickAttendance] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
-    const loadBackupData = async () => {
-      try {
-        const autoBackupEnabled = localStorage.getItem("autoBackup") === "true"
-        if (autoBackupEnabled) {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
-
-          if (user) {
-            const backupData = await loadDataFromSupabase(user.id)
-            if (backupData) {
-              localStorage.setItem("subjects", JSON.stringify(backupData.subjects))
-              localStorage.setItem("templates", JSON.stringify(backupData.templates))
-              localStorage.setItem("attendance", JSON.stringify(backupData.attendance))
-
-              setSubjects(backupData.subjects)
-              setTemplates(backupData.templates)
-              setAttendanceRecords(backupData.attendance)
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load backup:", error)
-      }
+    const user = getDemoUser()
+    if (!user) {
+      router.push("/auth/login")
     }
-
-    loadBackupData()
-  }, [])
+  }, [router])
 
   const handleCreateTemplate = (name: string, category: Subject["category"]) => {
     const newTemplate: Template = {

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { User, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/client"
+import { getDemoUser, demoSignOut } from "@/lib/demo-auth"
 import { useRouter } from "next/navigation"
 
 interface ProfileDropdownProps {
@@ -16,21 +16,15 @@ export function ProfileDropdown({ onProfileClick, onSettingsClick }: ProfileDrop
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) {
-        setUser({
-          email: user.email,
-          name: user.user_metadata?.full_name || user.email?.split("@")[0],
-        })
-      }
+    const demoUser = getDemoUser()
+    if (demoUser) {
+      setUser({
+        email: demoUser.email,
+        name: demoUser.name,
+      })
     }
-    getUser()
   }, [])
 
   useEffect(() => {
@@ -44,7 +38,7 @@ export function ProfileDropdown({ onProfileClick, onSettingsClick }: ProfileDrop
   }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    demoSignOut()
     router.push("/auth/login")
   }
 

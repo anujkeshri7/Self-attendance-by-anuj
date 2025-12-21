@@ -5,7 +5,7 @@ import { X, Camera, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createClient } from "@/lib/supabase/client"
+import { getDemoUser, updateDemoUserName } from "@/lib/demo-auth"
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -17,7 +17,6 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
-  const supabase = createClient()
 
   useEffect(() => {
     if (isOpen) {
@@ -25,13 +24,11 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     }
   }, [isOpen])
 
-  const loadProfile = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+  const loadProfile = () => {
+    const user = getDemoUser()
     if (user) {
-      setEmail(user.email || "")
-      setName(user.user_metadata?.full_name || "")
+      setEmail(user.email)
+      setName(user.name)
     }
   }
 
@@ -39,19 +36,15 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     setLoading(true)
     setMessage("")
 
-    const { error } = await supabase.auth.updateUser({
-      data: { full_name: name },
-    })
+    updateDemoUserName(name)
+    setMessage("Profile updated successfully!")
 
-    if (error) {
-      setMessage("Failed to update profile")
-    } else {
-      setMessage("Profile updated successfully!")
-      setTimeout(() => {
-        onClose()
-        setMessage("")
-      }, 1500)
-    }
+    setTimeout(() => {
+      onClose()
+      setMessage("")
+      window.location.reload()
+    }, 1500)
+
     setLoading(false)
   }
 

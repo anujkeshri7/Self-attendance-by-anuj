@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Moon, Sun, Bell, Shield, Trash2, Download, ChevronRight } from "lucide-react"
+import { X, Moon, Sun, Bell, Trash2, Download, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { exportToPDF } from "@/lib/pdf-export"
-import { syncDataToSupabase, supabase } from "@/lib/supabase/backup"
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -15,7 +14,7 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
-  const [autoBackup, setAutoBackup] = useState(false)
+  const [autoBackup] = useState(false)
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem("darkMode") === "true"
@@ -23,9 +22,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     if (savedDarkMode) {
       document.documentElement.classList.add("dark")
     }
-
-    const savedAutoBackup = localStorage.getItem("autoBackup") === "true"
-    setAutoBackup(savedAutoBackup)
   }, [])
 
   useEffect(() => {
@@ -37,10 +33,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       localStorage.setItem("darkMode", "false")
     }
   }, [darkMode])
-
-  useEffect(() => {
-    localStorage.setItem("autoBackup", autoBackup.toString())
-  }, [autoBackup])
 
   const handleExportData = async () => {
     try {
@@ -54,31 +46,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     } catch (error) {
       console.error("Export error:", error)
       alert("Failed to export PDF")
-    }
-  }
-
-  const handleAutoBackup = async (enabled: boolean) => {
-    setAutoBackup(enabled)
-
-    if (enabled) {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (user) {
-          const data = {
-            subjects: JSON.parse(localStorage.getItem("subjects") || "[]"),
-            templates: JSON.parse(localStorage.getItem("templates") || "[]"),
-            attendance: JSON.parse(localStorage.getItem("attendance") || "[]"),
-          }
-          await syncDataToSupabase(user.id, data)
-          alert("Data backed up successfully!")
-        }
-      } catch (error) {
-        console.error("Backup error:", error)
-        alert("Failed to backup data")
-        setAutoBackup(false)
-      }
     }
   }
 
@@ -123,12 +90,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           description: "Download all your attendance data",
           action: <ChevronRight className="w-4 h-4 text-muted-foreground" />,
           onClick: handleExportData,
-        },
-        {
-          icon: Shield,
-          label: "Auto Backup",
-          description: "Automatically backup your data to cloud",
-          action: <Switch checked={autoBackup} onCheckedChange={handleAutoBackup} />,
         },
       ],
     },
