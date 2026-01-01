@@ -2,11 +2,16 @@
 const config = {
   plugins: {
     '@tailwindcss/postcss': {
-      content: [
-        './app/**/*.{js,ts,jsx,tsx}',
-        './components/**/*.{js,ts,jsx,tsx}',
-        './lib/**/*.{js,ts,jsx,tsx}',
-      ],
+      content: {
+        files: [
+          './app/**/*.{js,ts,jsx,tsx}',
+          './components/**/*.{js,ts,jsx,tsx}',
+          './lib/**/*.{js,ts,jsx,tsx}',
+        ],
+        negated: [
+          // Exclude unnecessary patterns
+        ],
+      },
     },
   },
 }
