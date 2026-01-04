@@ -1,5 +1,8 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Removed @import "tw-animate-css" - incompatible with Tailwind v3 browser build */
 
 @custom-variant dark (&:is(.dark *));
 

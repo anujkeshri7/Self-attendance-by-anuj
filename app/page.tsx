@@ -369,6 +369,7 @@ export default function HomePage() {
         onNavigateHome={navigateToHome}
         onQuickAttendance={handleQuickAttendance}
         onSearchAttendance={handleSearchAttendance}
+        attendanceRecords={attendanceRecords}
       />
 
       <div className="flex flex-col min-h-screen">

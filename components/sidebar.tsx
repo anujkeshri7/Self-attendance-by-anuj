@@ -5,6 +5,7 @@ import { X, Home, Zap, Search, Save, MenuIcon, Settings, Mail } from "lucide-rea
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { SettingsModal } from "@/components/settings-modal"
+import { generateBackupReport } from "@/lib/backup-pdf"
 
 interface Subject {
   id: string
@@ -33,6 +34,7 @@ interface SidebarProps {
   onNavigateHome: () => void
   onQuickAttendance: () => void
   onSearchAttendance: () => void
+  attendanceRecords?: any[] // added attendanceRecords prop
 }
 
 export function Sidebar({
@@ -47,24 +49,18 @@ export function Sidebar({
   onNavigateHome,
   onQuickAttendance,
   onSearchAttendance,
+  attendanceRecords = [], // added attendanceRecords with default
 }: SidebarProps) {
   const [showSettings, setShowSettings] = useState(false)
 
   if (!isOpen) return null
 
   const handleBackupRestore = () => {
-    const data = {
-      subjects: JSON.parse(localStorage.getItem("subjects") || "[]"),
-      templates: JSON.parse(localStorage.getItem("templates") || "[]"),
-      attendance: JSON.parse(localStorage.getItem("attendance") || "[]"),
+    if (templates.length === 0) {
+      alert("No data to export. Create templates and subjects first.")
+      return
     }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `self-tracker-backup-${new Date().toISOString().split("T")[0]}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    generateBackupReport(templates, subjects, attendanceRecords)
     onClose()
   }
 
